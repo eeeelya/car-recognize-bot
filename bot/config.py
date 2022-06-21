@@ -2,7 +2,6 @@ import os
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-POSTGRES_DB = os.getenv("POSTGRES_DB")
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+S3_KEY = os.getenv("S3_KEY")
+S3_SECRET_KEY = os.getenv("S3_SECRET_KEY")
+BUCKET_NAME = os.getenv("BUCKET_NAME")
