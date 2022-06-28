@@ -1,0 +1,8 @@
+version: '3.10'
+
+services:
+  bot:
+    build: .
+    command: python -u bot.py
+    env_file:
+      - .env
