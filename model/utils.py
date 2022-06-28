@@ -3,10 +3,11 @@ import json
 import boto3
 import cv2
 import numpy as np
-import logging
+import pandas as pd
 
-logger = logging.getLogger("bot")
 from bot.config import S3_KEY, S3_SECRET_KEY
+
+NAMES = pd.read_csv("names.csv", header=None, names=['name']).reset_index()
 
 
 async def read_image(image: io.BytesIO) -> np.ndarray:
@@ -16,7 +17,6 @@ async def read_image(image: io.BytesIO) -> np.ndarray:
 
     image = cv2.resize(img, dsize=(400, 400), interpolation=cv2.INTER_NEAREST)
     normalize_image = await normalization(image)
-    logger.info("DOOOOOOOOONE")
 
     return normalize_image
 
@@ -31,7 +31,7 @@ async def normalization(image: np.ndarray) -> np.ndarray:
     return image
 
 
-async def launch_calculations(image: np.ndarray):
+def launch_calculations(image: np.ndarray):
     aws_lambda = boto3.client(
         "lambda", aws_access_key_id=S3_KEY, aws_secret_access_key=S3_SECRET_KEY, region_name="eu-north-1"
     )
@@ -40,10 +40,19 @@ async def launch_calculations(image: np.ndarray):
         "image": image.tolist(),
     }
     result = aws_lambda.invoke(
-        FunctionName="car-predictions",
+        FunctionName="car-bot",
         InvocationType="RequestResponse",
         Payload=json.dumps(parameters),
     )
     response = json.loads(result["Payload"].read())
 
-    return response
+    return json.loads(response)
+
+
+async def get_results(response):
+    answer = []
+
+    for item in dict(sorted(response.items(), key=lambda item: item[1], reverse=True)):
+        answer.append(f"Car: {NAMES.iloc[item]['name']}. Confidence: {response[item]:.2f}\n")
+
+    return "".join(answer)
